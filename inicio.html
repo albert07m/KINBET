@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Kinbet - Premium E-Sports Platform</title>
+    <!-- Tailwind CSS para diseño fluido y premium -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SUPABASE -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Fuentes deportivas premium -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Iconos FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        kinblack: '#07090e',
+                        kindark: '#0e121a',
+                        kinpurple: '#7c3aec',
+                        kingold: '#ff9f0a',
+                        kingreen: '#00ff66',
+                        kinred: '#ff3b30'
+                    },
+                    fontFamily: {
+                        syne: ['Syne', 'sans-serif'],
+                        jakarta: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * { -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+        input, select, textarea { user-select: text !important; -webkit-user-select: text !important; }
+        body { overscroll-behavior-y: contain; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .neon-border { box-shadow: 0 0 15px rgba(124, 58, 237, 0.20); }
+        .neon-green { box-shadow: 0 0 15px rgba(0, 255, 102, 0.25); }
+        .glass-panel { background: rgba(14, 18, 26, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+    </style>
+</head>
+<body class="bg-kinblack text-slate-100 font-jakarta min-h-screen flex flex-col justify-between overflow-hidden">
+
+    <div class="flex-grow flex flex-col h-screen max-w-md mx-auto w-full bg-kinblack relative overflow-hidden shadow-2xl border-x border-slate-900">
+        
+        <header id="app-header" class="hidden bg-kindark/90 border-b border-slate-800/60 py-3.5 px-5 flex justify-between items-center z-40 backdrop-blur-md">
+            <div class="flex items-center gap-2">
+                <div class="bg-gradient-to-r from-kinpurple to-pink-600 text-white w-7 h-7 rounded-lg flex items-center justify-center font-syne font-800 text-xs tracking-tighter">K</div>
+                <h1 class="font-syne font-800 text-lg uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300">
+                    Kin<span class="text-kingreen">bet</span> <span id="header-mode-badge" class="text-[8px] bg-blue-600 text-white px-1.5 py-0.5 rounded align-top ml-1 font-mono font-bold transition-colors">REAL</span>
+                </h1>
+            </div>
+            
+            <div onclick="openDepositModal()" class="bg-slate-900 border border-slate-800/80 rounded-full py-1.5 px-3 flex items-center gap-1.5 cursor-pointer hover:bg-slate-800 transition-colors">
+                <span class="text-kingreen font-mono font-bold text-xs transition-all" id="header-balance">0.00€</span>
+                <i class="fa-solid fa-plus-circle text-slate-500 text-[10px] ml-0.5"></i>
+            </div>
+        </header>
+
+        <div class="flex-grow overflow-y-auto no-scrollbar pb-24 relative" id="screen-container">
+            
+            <div id="screen-auth" class="p-6 flex flex-col justify-center min-h-[90vh] gap-6">
+                <div class="text-center flex flex-col items-center">
+                    <div class="bg-gradient-to-tr from-kinpurple to-kingreen p-0.5 rounded-2xl mb-4 shadow-xl">
+                        <div class="bg-kinblack rounded-2xl p-4 w-16 h-16 flex items-center justify-center font-syne font-800 text-2xl text-white">K</div>
+                    </div>
+                    <h2 class="font-syne text-2xl uppercase tracking-wider">Únete a Kin<span class="text-kingreen">bet</span></h2>
+                    <p class="text-xs text-slate-400 mt-1 max-w-[280px]">Apuestas 1v1 y Torneos de FC26 en España y Latinoamérica.</p>
+                </div>
+
+                <div class="bg-kindark border border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4 max-h-[60vh] overflow-y-auto no-scrollbar">
+                    <div id="auth-title" class="text-xs font-mono uppercase text-kingreen tracking-wider mb-1">Registrar / Iniciar Sesión</div>
+                    
+                    <div class="flex flex-col gap-3">
+                        <div>
+                            <label class="text-[10px] font-mono uppercase text-slate-400 block mb-1">Correo Electrónico</label>
+                            <input id="auth-email" type="email" placeholder="nombre@correo.com" class="w-full bg-slate-950 border border-slate-800 text-xs px-3.5 py-2.5 rounded-xl text-white focus:outline-none focus:border-kinpurple">
+                        </div>
+                        <div id="ea-id-group">
+                            <label class="text-[10px] font-mono uppercase text-slate-400 block mb-1">EA ID de Jugador / Gamertag</label>
+                            <input id="auth-eaid" type="text" placeholder="Ej: FC_KinGamer" class="w-full bg-slate-950 border border-slate-800 text-xs px-3.5 py-2.5 rounded-xl text-white focus:outline-none focus:border-kinpurple">
+                        </div>
+                    </div>
+
+                    <button onclick="processAuth()" class="w-full bg-gradient-to-r from-kingreen to-emerald-500 text-kinblack font-bold uppercase py-3.5 px-4 rounded-xl text-xs transition-all active:scale-95 shadow-md mt-2" id="auth-submit-btn">
+                        Conectar a la Nube y Entrar
+                    </button>
+                </div>
+            </div>
+
+            <!-- PANTALLA 1: ARENA -->
+            <div id="screen-home" class="hidden p-5 flex flex-col gap-5">
+                <div class="bg-gradient-to-br from-slate-900 to-kindark rounded-2xl p-4 border border-slate-800/80 relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-kingreen/5 rounded-full blur-xl"></div>
+                    <span class="text-[10px] font-mono tracking-widest text-kingreen uppercase font-bold">TEMPORADA 1</span>
+                    <h2 class="text-xl font-syne font-800 mt-1 uppercase">FC26 Wager Arena</h2>
+                    <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Bienvenido a la versión conectada. Tu saldo ahora se guarda automáticamente en la base de datos.</p>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-mono uppercase text-slate-400 tracking-wider mb-2.5">Juegos Soportados</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-kindark border-2 border-kingreen rounded-xl p-3 flex flex-col gap-2 relative shadow-lg">
+                            <span class="absolute top-2 right-2 bg-kingreen text-kinblack text-[8px] font-bold px-1.5 py-0.5 rounded">1V1 ACTIVO</span>
+                            <i class="fa-solid fa-gamepad text-2xl text-kingreen"></i>
+                            <span class="font-bold text-xs text-white">EA Sports FC 26</span>
+                            <span class="text-[9px] text-slate-400">Amistosos Online</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANTALLA: PERFIL DE JUGADOR -->
+            <div id="screen-profile" class="hidden p-5 flex flex-col gap-5">
+                <div class="flex items-center gap-4 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+                    <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-kinpurple to-pink-500 flex items-center justify-center font-syne text-xl font-bold text-white shadow-lg">
+                        K
+                    </div>
+                    <div class="flex-grow">
+                        <h3 class="font-bold text-base flex items-center gap-1" id="profile-eaid-display">Jugador <i class="fa-solid fa-circle-check text-blue-500 text-sm"></i></h3>
+                        <span class="text-slate-400 text-xs font-mono block" id="profile-email-display">correo@kinbet.com</span>
+                    </div>
+                </div>
+
+                <div class="bg-kindark border border-slate-800/80 rounded-2xl p-4 flex justify-between items-center shadow-lg relative overflow-hidden">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-600"></div>
+                    <div class="pl-2">
+                        <span class="text-[10px] font-mono uppercase text-slate-400 block mb-0.5"><i class="fa-solid fa-database text-slate-500 mr-1"></i> Base de Datos</span>
+                        <span class="font-bold text-white text-xs">Conectado a la Nube (Real)</span>
+                    </div>
+                </div>
+
+                <button onclick="logout()" class="w-full bg-slate-950 border border-slate-800 text-kinred font-bold uppercase py-3.5 rounded-xl text-xs mt-2 active:scale-95 transition-all">
+                    <i class="fa-solid fa-sign-out mr-1"></i> Cerrar Sesión
+                </button>
+            </div>
+        </div>
+
+        <!-- Menú Inferior -->
+        <nav id="app-nav" class="hidden bg-kindark/95 border-t border-slate-800/80 py-2.5 px-4 flex justify-between items-center absolute bottom-0 left-0 right-0 z-40 backdrop-blur-md">
+            <button onclick="switchTab('home')" id="nav-home" class="flex-1 flex flex-col items-center justify-center text-kingreen gap-1">
+                <i class="fa-solid fa-gamepad text-lg"></i>
+                <span class="text-[9px] font-bold">Arena</span>
+            </button>
+            <button onclick="switchTab('profile')" id="nav-profile" class="flex-1 flex flex-col items-center justify-center text-slate-400 gap-1 hover:text-white transition-colors">
+                <i class="fa-solid fa-user text-lg"></i>
+                <span class="text-[9px] font-bold">Perfil</span>
+            </button>
+        </nav>
+
+        <!-- TOAST / NOTIFICACIONES -->
+        <div id="toast-notification" class="hidden absolute top-16 left-5 right-5 bg-slate-900 border border-slate-800 p-3 rounded-xl shadow-2xl flex items-center gap-3 z-50 transition-opacity">
+            <span id="toast-icon" class="text-lg">✨</span>
+            <p id="toast-message" class="text-xs text-white font-medium">Notificación</p>
+        </div>
+    </div>
+
+    <!-- LÓGICA CON SUPABASE -->
+    <script>
+        const SUPABASE_URL = 'https://idzguunqkzdwwbxavcyz.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlkemd1dW5xa3pkd3dieGF2Y3l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2NjY0ODMsImV4cCI6MjA5ODI0MjQ4M30.1BipNawFXy6KzYNUpbyj0oUclWB4lWXPUEbv3M9u4I8';
+        
+        // CORRECCIÓN AQUÍ: Usamos window.supabase para evitar que el navegador se confunda
+        const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let saldoReal = 0.0;
+
+        function updateBalanceDisplay() {
+            document.getElementById('header-balance').textContent = saldoReal.toFixed(2) + "€";
+        }
+
+        async function processAuth() {
+            const emailInput = document.getElementById('auth-email').value;
+            const eaidInput = document.getElementById('auth-eaid').value;
+            
+            if(!emailInput || !eaidInput) {
+                showToast("Por favor, rellena todos los campos", "❌");
+                return;
+            }
+
+            showToast("Verificando usuario en la nube...", "⏳");
+
+            let { data: jugador, error: errorBusqueda } = await clienteSupabase
+                .from('usuarios')
+                .select('*')
+                .eq('email', emailInput)
+                .single();
+
+            if (jugador) {
+                saldoReal = jugador.saldo || 0;
+                showToast("¡Bienvenido de nuevo!", "👋");
+            } else {
+                const { error: errorInsert } = await clienteSupabase
+                    .from('usuarios')
+                    .insert([{ email: emailInput, ea_id: eaidInput, saldo: 0 }]);
+                
+                if(errorInsert) {
+                    showToast("Error base de datos: " + errorInsert.message, "⚠️");
+                    console.error(errorInsert);
+                    return;
+                }
+                saldoReal = 0;
+                showToast("¡Cuenta nueva creada con éxito!", "🎉");
+            }
+
+            document.getElementById('profile-email-display').textContent = emailInput;
+            document.getElementById('profile-eaid-display').innerHTML = `${eaidInput} <i class="fa-solid fa-circle-check text-blue-500 text-sm"></i>`;
+
+            document.getElementById('app-header').classList.remove('hidden');
+            document.getElementById('app-nav').classList.remove('hidden');
+
+            updateBalanceDisplay();
+            switchTab('home');
+        }
+
+        function logout() {
+            document.getElementById('app-header').classList.add('hidden');
+            document.getElementById('app-nav').classList.add('hidden');
+            switchScreen('auth');
+            showToast("Sesión cerrada", "↩️");
+        }
+
+        function switchScreen(screenId) {
+            const screens = ['auth', 'home', 'profile'];
+            screens.forEach(s => {
+                const el = document.getElementById(`screen-${s}`);
+                if (el) el.classList.add('hidden');
+            });
+            document.getElementById(`screen-${screenId}`).classList.remove('hidden');
+        }
+
+        function switchTab(tabName) {
+            ['home', 'profile'].forEach(t => {
+                const btn = document.getElementById(`nav-${t}`);
+                if (btn) btn.className = "flex-1 flex flex-col items-center justify-center text-slate-400 gap-1 hover:text-white transition-colors";
+            });
+            const activeBtn = document.getElementById(`nav-${tabName}`);
+            if (activeBtn) activeBtn.className = "flex-1 flex flex-col items-center justify-center text-kingreen gap-1";
+            switchScreen(tabName);
+        }
+
+        function showToast(message, icon = "✨") {
+            const toast = document.getElementById('toast-notification');
+            document.getElementById('toast-icon').textContent = icon;
+            document.getElementById('toast-message').textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => { toast.classList.add('hidden'); }, 3000);
+        }
+
+        window.onload = () => {
+            switchScreen('auth');
+            updateBalanceDisplay();
+        }
+    </script>
+    </script>
+</body>
+</html>
